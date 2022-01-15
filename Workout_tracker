@@ -1,0 +1,68 @@
+import requests
+import datetime
+import os
+
+API_KEY = os.environ.get("API_KEY")
+APP_ID = os.environ.get("API_ID")
+GENDER = "male"
+WEIGHT= 69
+HEIGHT= 167.64
+AGE = 30
+NAME = os.environ.get("USER_NAME")
+EMAIL_ADDRESS = os.environ.get("EMAIL_ADDRESS")
+
+SHEETY_ENDPOINT = os.environ.get("SHEETY_ENDPOINT")
+nutritionix_endpoint = os.environ.get("NUTRITION_ENDPOINT")
+
+headers = {
+    "x-app-id":APP_ID,
+    "x-app-key":API_KEY,
+    "x-remote-user-id":"0"
+}
+
+user_input = input("Please enter the exercise:")
+request_body = {
+    "query":user_input,
+     "gender": GENDER,
+     "weight_kg":WEIGHT,
+     "height_cm": HEIGHT,
+     "age":AGE
+}
+response = requests.post(url=nutritionix_endpoint, headers=headers, json = request_body)
+
+results = response.json()
+
+exercise = results["exercises"][0]["user_input"]
+duration = results["exercises"][0]["duration_min"]
+calories = results["exercises"][0]["nf_calories"]
+
+
+#to obtain time:
+date = datetime.datetime.now().strftime("%d/%m/%Y")
+
+
+time_hour = datetime.datetime.now().time().hour
+
+time_minutes = datetime.datetime.now().time().minute
+
+time = f"{time_hour}:{time_minutes}"
+
+
+# for n in results["exercises"]:
+sheet_inputs = {
+    "workout":{
+        "date" : date,
+        "time":time,
+        "exercise":exercise,
+        "duration": duration,
+        "calories": calories,
+
+    }
+
+}
+bearer_headers = {
+    "Authorization":API_KEY
+
+}
+response_sheety = requests.post(url = SHEETY_ENDPOINT, json=sheet_inputs, headers=bearer_headers)
+print(response_sheety.text)
